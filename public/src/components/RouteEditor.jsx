@@ -198,11 +198,26 @@ let RouteEditor = React.createClass({
                 onBlur={this._reportChange}/>
             <div>
             
+          <div className="collapse-area">
+          { this.state.jsonTemplatecollapsed  ? 
+            <div>
+                  <IconButton 
+                      iconClassName="material-icons mui-icon-add-item" 
+                      tooltip="Enter Json Template"
+                      onClick={this._expandJsonTemplate}
+                      style={iconButtonStyle}/>
+                      <span style={ { fontWeight: 'bold', margin: 5} }>JSON TEMPLATE</span>
+              
+                </div>
+              : 
+              
+              <div>
+                 <IconButton 
+                    iconClassName="material-icons mui-icon-remove" 
+                    tooltip="Collapse"
+                    onClick={this._collapseJsonTemplate}
+                    style={iconButtonStyle}/>
 
-
-            
-              <Paper zDepth={2} className={ "json-template-editor" + (this.state.jsonTemplatecollapsed ? ' collapsed-route-editor' : '') }>
-              Json Template:
               <CodeMirror
                   value={jsonMetaTemplate}
                   options={options}
@@ -212,7 +227,13 @@ let RouteEditor = React.createClass({
                     label="Generate Json"
                     onClick={ this.props.onGenerateJson }
                     style={buttonStyle} />
-           </Paper>
+       
+           
+                    </div>
+          }
+        </div>
+
+
 
             Response:
             <Checkbox 
