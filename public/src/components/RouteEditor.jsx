@@ -4,6 +4,7 @@ require('codemirror/mode/javascript/javascript.js');
 require('codemirror/addon/display/fullscreen.js');
 const mui = require('material-ui');
 const _ = require('lodash');
+const  dummyjson = require('dummy-json');
 
 let {
   RaisedButton, 
@@ -21,7 +22,8 @@ let RouteEditor = React.createClass({
       active: false,
       onChange: function(){},
       onCopy: function(){},
-      onDelete: function(){}
+      onDelete: function(){},
+      onGenerateJson: function(){}
     };
   },
 
@@ -29,7 +31,8 @@ let RouteEditor = React.createClass({
     return { 
       route: this.props.route,
       active: this.props.active,
-      collapsed: true
+      collapsed: true,
+      jsonTemplatecollapsed: true
     };
   },
   
@@ -65,12 +68,32 @@ let RouteEditor = React.createClass({
     }
   },
   
+  _changeJsonMetaTemplate(newJsonMetaTemplate) {
+    //if (newJsonMetaTemplate !== this.state.route.jsonMetaTemplate.content.text) {
+      //var newRoute = _.cloneDeep(this.state.route);
+     //newRoute.jsonMetaTemplate.content.text = newJsonMetaTemplate;
+      //this.setState({ route: newRoute });
+      
+      //Convert json template to json.
+      //let templateConverted = dummyjson.parse(newJsonMetaTemplate); // Returns a string, JSON parse should pass if string is valid.
+      //_changeResponseText(templateConverted); //Call to change text of response code mirror.
+    //}
+  },
+
   _collapseRoute() {
     this.setState({collapsed: true});
   },
   
   _expandRoute() {
     this.setState({collapsed: false});
+  },
+
+    _collapseJsonTemplate() {
+    this.setState({jsonTemplatecollapsed: true});
+  },
+  
+  _expandJsonTemplate() {
+    this.setState({jsonTemplatecollapsed: false});
   },
   
   _reportChange() {
@@ -84,7 +107,8 @@ let RouteEditor = React.createClass({
 
   render() {
     let responseText = this.state.route.response.content.text;
-    
+    let jsonMetaTemplate  = this.state.route.jsonMetaTemplate ? this.state.route.jsonMetaTemplate.content.text : ''; 
+
     let options = {
       lineNumbers: true,
       mode:{name:"javascript", json:true},
@@ -173,6 +197,23 @@ let RouteEditor = React.createClass({
                 onChange={this._changeURL}
                 onBlur={this._reportChange}/>
             <div>
+            
+
+
+            
+              <Paper zDepth={2} className={ "json-template-editor" + (this.state.jsonTemplatecollapsed ? ' collapsed-route-editor' : '') }>
+              Json Template:
+              <CodeMirror
+                  value={jsonMetaTemplate}
+                  options={options}
+                  onChange={this._changeJsonMetaText} /> 
+                  
+                  <RaisedButton
+                    label="Generate Json"
+                    onClick={ this.props.onGenerateJson }
+                    style={buttonStyle} />
+           </Paper>
+
             Response:
             <Checkbox 
                 label="Mirror Request Body" 
