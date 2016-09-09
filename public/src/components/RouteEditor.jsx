@@ -78,7 +78,7 @@ let RouteEditor = React.createClass({
         //CEW - 09-09-2016 - Use dummyjson to convert template to json.
         newRoute.response.jsonTemplate = '';
         let conversion = dummyjson.parse(newResponseText);
-        
+
         //The converted template should be valid json.
         if (this._validateResponseText(conversion)) {
           newRoute.response.jsonTemplate = newResponseText;
@@ -141,7 +141,9 @@ let RouteEditor = React.createClass({
         let lineMatch = ex.message.match(/line ([0-9]*)/);
         if (lineMatch && lineMatch.length > 1) {
           //Highlight error line.
-          this.highlightErrorLine(+lineMatch[1] - 1);
+          if (!this.state.route.response.useJsonTemplate) { //Don't highlight if "use json template on"
+            this.highlightErrorLine(+lineMatch[1] - 1);
+          }
         }
         return {
           valid: false,
