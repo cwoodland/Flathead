@@ -31,8 +31,7 @@ let RouteEditor = React.createClass({
     return { 
       route: this.props.route,
       active: this.props.active,
-      collapsed: true,
-      jsonTemplatecollapsed: true
+      collapsed: true
     };
   },
   
@@ -58,11 +57,24 @@ let RouteEditor = React.createClass({
     this.setState({ route: newRoute });
     this.props.onChange(newRoute);
   },
+
+    _changeJsonTemplate(event, toggled) {
+    var newRoute = _.cloneDeep(this.state.route);
+    newRoute.response.jsonTemplate = toggled;
+    this.setState({ route: newRoute });
+    this.props.onChange(newRoute);
+  },
   
   _changeResponseText(newResponseText) {
     //console.log('New Response text', newResponseText);
     if(newResponseText !== this.state.route.response.content.text){
         var newRoute = _.cloneDeep(this.state.route);
+        
+        //Use json-dummy to convert template into json string.
+        if(this.state.route.response.jsonTemplate){
+             newResponseText = dummyjson.parse(newResponseText); // Returns a string, JSON parse should pass if string is valid.
+             console.log('New Response text after conversion', newResponseText);
+        }
         newRoute.response.content.text = newResponseText;
         this.setState({ route: newRoute });
     }
@@ -87,15 +99,7 @@ let RouteEditor = React.createClass({
   _expandRoute() {
     this.setState({collapsed: false});
   },
-
-    _collapseJsonTemplate() {
-    this.setState({jsonTemplatecollapsed: true});
-  },
-  
-  _expandJsonTemplate() {
-    this.setState({jsonTemplatecollapsed: false});
-  },
-  
+   
   _reportChange() {
       console.log('Reporting change to:', this.state.route);
     this.props.onChange(this.state.route);
@@ -198,49 +202,17 @@ let RouteEditor = React.createClass({
                 onBlur={this._reportChange}/>
             <div>
             
-          <div className="collapse-area">
-          { this.state.jsonTemplatecollapsed  ? 
-            <div>
-                  <IconButton 
-                      iconClassName="material-icons mui-icon-add-item" 
-                      tooltip="Enter Json Template"
-                      onClick={this._expandJsonTemplate}
-                      style={iconButtonStyle}/>
-                      <span style={ { fontWeight: 'bold', margin: 5} }>JSON TEMPLATE</span>
-              
-                </div>
-              : 
-              
-              <div>
-                 <IconButton 
-                    iconClassName="material-icons mui-icon-remove" 
-                    tooltip="Collapse"
-                    onClick={this._collapseJsonTemplate}
-                    style={iconButtonStyle}/>
-
-              <CodeMirror
-                  value={jsonMetaTemplate}
-                  options={options}
-                  onChange={this._changeJsonMetaText} /> 
-                  
-                  <RaisedButton
-                    label="Generate Json"
-                    onClick={ this.props.onGenerateJson }
-                    style={buttonStyle} />
-       
-           
-                    </div>
-          }
-        </div>
-
-
-
             Response:
             <Checkbox 
                 label="Mirror Request Body" 
                 disabled= {this.state.route.request.method === 'GET'}
                 defaultChecked={this.state.route.response.mirrorRequest} 
                 onCheck={this._changeMirror} />
+            <Checkbox 
+                label="Use Json Template" 
+                defaultChecked={this.state.route.response.jsonTemplate} 
+                onCheck={this._changeJsonTemplate} />
+            
             { !this.state.route.response.mirrorRequest &&
               <CodeMirror 
                   value={responseText} 
