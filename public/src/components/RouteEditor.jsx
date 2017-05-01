@@ -6,6 +6,7 @@ const mui = require('material-ui');
 const _ = require('lodash');
 const jsonlint = require("jsonlint");
 const $ = require('jquery');
+const dummyjson = require('dummy-json');
 
 
 let {
@@ -61,19 +62,42 @@ let RouteEditor = React.createClass({
     this.props.onChange(newRoute);
   },
 
+  _changeUseJsonTemplate(event, toggled) {
+    var newRoute = _.cloneDeep(this.state.route);
+    newRoute.response.useJsonTemplate = toggled;
+    this.setState({ route: newRoute });
+    this.props.onChange(newRoute);
+  },
+
   _changeResponseText(newResponseText) {
     //console.log('New Response text', newResponseText);
     if (newResponseText !== this.state.route.response.content.text) {
       var newRoute = _.cloneDeep(this.state.route);
-      newRoute.response.content.text = newResponseText;
 
-      //CEW - 04-05-2016 Use jsonlint and json parse to test if json is valid.
-      //Jsonlint only returns one line error at a time, so we reset the highlight on all 
-      //lines before doing any tests on the input.
-      //I also don’t want to prevent any saving of the text, just in case 
-      //a user intentially wants the json to be bad.
-      this.removeAllErrorHighlights();
-      let ret = this._validateResponseText(newResponseText);
+      if (this.state.route.response.useJsonTemplate) {
+        //CEW - 09-09-2016 - Use dummyjson to convert template to json.
+        newRoute.response.jsonTemplate = '';
+        let conversion = dummyjson.parse(newResponseText);
+
+        //The converted template should be valid json.
+        if (this._validateResponseText(conversion)) {
+          newRoute.response.jsonTemplate = newResponseText;
+          newRoute.response.content.text = conversion;
+        } else {
+          newRoute.response.jsonTemplate = '';
+          newRoute.response.content.text = '';
+        }
+      } else {
+        newRoute.response.content.text = newResponseText;
+        newRoute.response.jsonTemplate = '';
+        //CEW - 04-05-2016 Use jsonlint and json parse to test if json is valid.
+        //Jsonlint only returns one line error at a time, so we reset the highlight on all
+        //lines before doing any tests on the input.
+        //I also don’t want to prevent any saving of the text, just in case
+        //a user intentially wants the json to be bad.
+        this.removeAllErrorHighlights();
+        let ret = this._validateResponseText(newResponseText);
+      }
       this.setState({ route: newRoute });
     }
   },
@@ -117,7 +141,10 @@ let RouteEditor = React.createClass({
         let lineMatch = ex.message.match(/line ([0-9]*)/);
         if (lineMatch && lineMatch.length > 1) {
           //Highlight error line.
-          this.highlightErrorLine(+lineMatch[1] - 1);
+          if (!this.state.route.response.useJsonTemplate) {
+            //Don't highlight if "use json template on"
+            this.highlightErrorLine(+lineMatch[1] - 1);
+          }
         }
         return {
           valid: false,
@@ -132,8 +159,8 @@ let RouteEditor = React.createClass({
 
   //#region Methods to highlight text
 
-  //Highlights given line of code.  
-  //If "remove", remove specified highlight 
+  //Highlights given line of code.
+  //If "remove", remove specified highlight
   //from code line.
   highlightErrorLine(lineNumber, remove = false) {
     let editor = this.refs.CodeMirror;
@@ -165,7 +192,10 @@ let RouteEditor = React.createClass({
   //#endregion
 
   render() {
-    let responseText = this.state.route.response.content.text;
+    //CEW - 09-09-2016 When the "use json template" option is chosen, the responseText is the template specified.
+    //When "use json template" is not chosen the responseText is the actual json entered by the user.
+    let responseText = this.state.route.response.useJsonTemplate ? this.state.route.response.jsonTemplate : this.state.route.response.content.text;
+    let jsonTemplateConverted = this.state.route.response.useJsonTemplate ? dummyjson.parse(this.state.route.response.jsonTemplate) : '';
 
     let options = {
       lineNumbers: true,
@@ -174,10 +204,27 @@ let RouteEditor = React.createClass({
       lineWrapping: true,
 
       extraKeys: {
-        "F11": function(cm) {
+        "F11": function (cm) {
           cm.setOption("fullScreen", !cm.getOption("fullScreen"));
         },
-        "Esc": function(cm) {
+        "Esc": function (cm) {
+          if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+        }
+      }
+    };
+
+    let optionsPreview = {
+      lineNumbers: true,
+      mode: { name: "javascript", json: true },
+      theme: 'monokai',
+      lineWrapping: true,
+      readOnly: true,
+
+      extraKeys: {
+        "F11": function (cm) {
+          cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+        },
+        "Esc": function (cm) {
           if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
         }
       }
@@ -202,7 +249,7 @@ let RouteEditor = React.createClass({
     }
 
     return (
-      <Paper zDepth= { 2} className= { "route-editor" + (this.state.collapsed ? ' collapsed-route-editor' : '') } >
+      <Paper zDepth= {2} className= { "route-editor" + (this.state.collapsed ? ' collapsed-route-editor' : '') } >
         <div className="delete-button-area">
           <IconButton
             iconClassName="material-icons mui-icon-clear-item"
@@ -263,6 +310,11 @@ let RouteEditor = React.createClass({
                 disabled= {this.state.route.request.method === 'GET'}
                 defaultChecked={this.state.route.response.mirrorRequest}
                 onCheck={this._changeMirror} />
+              <Checkbox
+                label="Use Json Template"
+                defaultChecked={this.state.route.response.useJsonTemplate}
+                onCheck={this._changeUseJsonTemplate} />
+
               { !this.state.route.response.mirrorRequest &&
                 <CodeMirror
                   ref="CodeMirror"
@@ -270,6 +322,17 @@ let RouteEditor = React.createClass({
                   options = { options }
                   onChange = { this._changeResponseText }
                   onFocusChange = { (focused) => !focused && this._reportChange() } /> }
+              <div>
+                {!this.state.route.response.mirrorRequest &&
+                  this.state.route.response.useJsonTemplate &&
+                  <div className={"preview-label"}> Preview: </div> }
+                { !this.state.route.response.mirrorRequest &&
+                  this.state.route.response.useJsonTemplate &&
+                  <CodeMirror
+                    ref="CodeMirrorJsonPreview"
+                    value = { jsonTemplateConverted }
+                    options = { optionsPreview } /> }
+              </div>
             </div>
           </div>
         }
