@@ -80,6 +80,7 @@ Flathead can use Handlebar style templates to generate json. All you have to do 
 ![Screenshot of Flathead](public/img/flatheadScreenShotTemplate.png)
 
 Please refer to https://github.com/webroo/dummy-json for all template options.
+
 Example Template:
 ```{
   "users": [
