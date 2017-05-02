@@ -311,7 +311,7 @@ let RouteEditor = React.createClass({
                 defaultChecked={this.state.route.response.mirrorRequest}
                 onCheck={this._changeMirror} />
               <Checkbox
-                label="Use Json Template"
+                label="Use Template"
                 defaultChecked={this.state.route.response.useJsonTemplate}
                 onCheck={this._changeUseJsonTemplate} />
 
