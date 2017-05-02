@@ -75,7 +75,7 @@ All they have to do is click the "Import Suite" icon located next to the "Add Su
 
 ### Templates
 
-Flathead can use Handlebar style templates to generate json. All you have to do is click the "Use Template" checkbox and populate the supplied box with your template.
+Flathead can use Handlebar style templates to generate json. All you have to do is click the "Use Template" checkbox and populate the supplied editor with your template.
 
 _Example Template:_
 ```{
