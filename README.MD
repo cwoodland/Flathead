@@ -77,11 +77,7 @@ All they have to do is click the "Import Suite" icon located next to the "Add Su
 
 Flathead can use Handlebar style templates to generate json. All you have to do is click the "Use Template" checkbox and populate the supplied box with your template.
 
-![Screenshot of Flathead](public/img/flatheadScreenShotTemplate.png)
-
-Please refer to https://github.com/webroo/dummy-json for all template options.
-
-Example Template:
+_Example Template:_
 ```{
   "users": [
     {{#repeat 200}}
@@ -109,3 +105,6 @@ Example Template:
   "price": "${{int 0 99999 '0,0'}}"
 }
 ```
+![Screenshot of Flathead](public/img/flatheadScreenShotTemplate.png)
+
+Please refer to https://github.com/webroo/dummy-json for all template options.
