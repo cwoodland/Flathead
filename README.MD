@@ -18,13 +18,13 @@ Install
 Flathead is available on npm:
 
   npm install -g flathead
-  
+
 Simply type `flathead` in your command line to spin it up. If you followed these instructions exactly, Google Chrome will open up a window with the URL `localhost:3192/admin`; this is where you will configure Flathead. Very good, leave this thing running forever. If for some reason you stop running it, start again soon (You can close/re-open the browser tab if you want to, that's not important).
 
 If you want a port that isn't 3192, you can specify it:
 
   flathead --port 4000
-  
+
 
 Develop
 -------
@@ -72,3 +72,39 @@ You can edit these Routes just like any other, allowing you to take an existing 
 Flathead suites can be imported/exported using a JSON file format (though heaven help you if you import some arbitrary JSON file). Once you've perfected a Suite, click the "Export" button to download it as a ".flathead.json" file. Send that file to anyone who wants to test the scenario you've created.
 
 All they have to do is click the "Import Suite" icon located next to the "Add Suite" icon above the suite list, and they can choose to import the file you've sent them.
+
+### Templates
+
+Flathead can use Handlebar style templates to generate json. All you have to do is click the "Use Template" checkbox and populate the supplied box with your template.
+
+![Screenshot of Flathead](public/img/flatheadScreenShotTemplate.png)
+
+Please refer to https://github.com/webroo/dummy-json for all template options.
+Example Template:
+```{
+  "users": [
+    {{#repeat 200}}
+    {
+      "id": {{@index}},
+      "name": "{{firstName}} {{lastName}}",
+      "work": "{{company}}",
+      "email": "{{email}}",
+      "dob": "{{date '1900' '2000' 'YYYY'}}",
+      "address": "{{int 1 100}} {{street}}",
+      "city": "{{city}}",
+      "optedin": {{boolean}}
+    }
+    {{/repeat}}
+  ],
+  "images": [
+    {{#repeat 3}}
+    "img{{@index}}.png"
+    {{/repeat}}
+  ],
+  "coordinates": {
+    "x": {{float -50 50 '0.00'}},
+    "y": {{float -25 25 '0.00'}}
+  },
+  "price": "${{int 0 99999 '0,0'}}"
+}
+```
