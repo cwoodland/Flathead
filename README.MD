@@ -81,8 +81,8 @@ Flathead can use Handlebar style templates to generate json. All you have to do 
 
 Please refer to https://github.com/webroo/dummy-json for all template options.
 
-Example Template:
 ```{
+  Example Template:
   "users": [
     {{#repeat 200}}
     {
